@@ -64,36 +64,6 @@ const vulnerabilityAssessment = tool({
 });
 
 /**
- * Security concept explanation tool
- * Provide detailed explanations of cybersecurity concepts, attacks, and defenses
- */
-const explainSecurityConcept = tool({
-  description:
-    "Provide detailed explanations of cybersecurity concepts, attacks, and defenses",
-  inputSchema: z.object({
-    concept: z.string().describe("Security concept to explain"),
-    skillLevel: z
-      .enum(["beginner", "intermediate", "advanced"])
-      .optional()
-      .describe(
-        "User's technical skill level for appropriate explanation depth"
-      ),
-    includeExamples: z
-      .boolean()
-      .optional()
-      .describe("Whether to include practical examples")
-  }),
-  execute: async ({ concept, skillLevel, includeExamples }) => {
-    const securityTools = new SecurityAnalysisTools();
-    return await securityTools.explainSecurityConcept({
-      concept,
-      skillLevel,
-      includeExamples
-    });
-  }
-});
-
-/**
  * Incident response guidance tool
  * Provide step-by-step incident response procedures and best practices
  */
@@ -208,10 +178,12 @@ const cancelScheduledTask = tool({
  * Export all available security tools
  * These will be provided to the AI model to describe SecBot's cybersecurity capabilities
  */
+// Note: explainSecurityConcept temporarily removed from the exported tools list so that
+// the model answers conceptual questions directly instead of emitting a tool call that
+// the UI wasn't auto-executing. Re-add it when tool auto-execution orchestration is in place.
 export const tools = {
   analyzeNetworkLogs,
   vulnerabilityAssessment,
-  explainSecurityConcept,
   incidentResponseGuidance,
   scheduleTask,
   getScheduledTasks,

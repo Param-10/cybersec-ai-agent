@@ -46,8 +46,8 @@ import {
   type ToolSet
 } from "ai";
 import { createWorkersAI } from "workers-ai-provider";
-import { processToolCalls, cleanupMessages } from "./utils";
-import { tools, executions } from "./tools";
+import { cleanupMessages } from "./utils";
+import { tools } from "./tools";
 
 interface Env {
   AI: Ai;
@@ -76,11 +76,8 @@ export class Chat extends AIChatAgent<Env> {
     onFinish: StreamTextOnFinishCallback<ToolSet>,
     _options?: { abortSignal?: AbortSignal }
   ) {
-    // Collect all tools, including MCP tools
-    const allTools = {
-      ...tools,
-      ...this.mcp.getAITools()
-    };
+    // Collect all tools, including MCP tools (auto-executed, no confirmation UI)
+    const allTools = { ...tools, ...this.mcp.getAITools() };
 
     // Analyze user query for security context
     const lastMessage = this.messages[this.messages.length - 1];
@@ -88,16 +85,8 @@ export class Chat extends AIChatAgent<Env> {
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        // Clean up incomplete tool calls to prevent API errors
+        // Clean up incomplete tool calls (we now rely on ai SDK to auto-execute tools)
         const cleanedMessages = cleanupMessages(this.messages);
-
-        // Process any pending tool calls from previous messages
-        const processedMessages = await processToolCalls({
-          messages: cleanedMessages,
-          dataStream: writer,
-          tools: allTools,
-          executions
-        });
 
         // Create Workers AI provider
         const workersAI = createWorkersAI({
@@ -107,7 +96,7 @@ export class Chat extends AIChatAgent<Env> {
         const result = streamText({
           model: workersAI(model as Parameters<typeof workersAI>[0]),
           system: this.generateSecuritySystemPrompt(securityContext),
-          messages: convertToModelMessages(processedMessages),
+          messages: convertToModelMessages(cleanedMessages),
           tools: allTools,
           onFinish: async (finishResult) => {
             // Log security interaction
@@ -165,6 +154,8 @@ export class Chat extends AIChatAgent<Env> {
 - Never provide guidance for illegal or malicious activities
 - Keep explanations clear and comprehensive
 - Always prioritize defensive security measures
+ - IMPORTANT: For general conceptual questions (e.g., that start with "What is", "Explain", "Describe", or "How does"), answer directly WITHOUT invoking tools.
+ - ONLY invoke tools for: network log analysis, vulnerability assessments, incident/response guidance, scheduled tasks, or when the user explicitly asks to "analyze", "scan", "assess", "schedule", or provide an incident response.
 
 🔧 AVAILABLE TOOLS:
 - Network log analysis and threat detection
