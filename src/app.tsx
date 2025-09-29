@@ -544,9 +544,11 @@ export default function SecBotInterface() {
                       {m.parts?.map((part) => {
                         // Stable key derivation avoiding array index usage
                         if (part.type === "text") {
-                          const textKey = `msg-${m.id}-text-${part.text.length}-${part.text.slice(0, 16)}`;
+                          // Create unique keys for both the div and the markdown component
+                          const divKey = `msg-${m.id}-div-${part.text.length}`;
+                          const markdownKey = `msg-${m.id}-md-${part.text.slice(0, 16)}`;
                           return (
-                            <div key={textKey}>
+                            <div key={divKey}>
                               <Card
                                 className={`p-4 ${
                                   isUser
@@ -555,7 +557,7 @@ export default function SecBotInterface() {
                                 }`}
                               >
                                 <MemoizedMarkdown
-                                  id={textKey}
+                                  id={markdownKey}
                                   content={part.text}
                                 />
                               </Card>
