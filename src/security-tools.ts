@@ -106,6 +106,16 @@ interface IncidentResponseParams {
   affectedSystems?: string[];
 }
 
+interface SecurityConceptExplanation {
+  description: string;
+  technicalDetails: string;
+  impact: string;
+  prevention: string[];
+  detection: string[];
+  examples?: string[];
+  caseStudies?: string[];
+}
+
 export class SecurityAnalysisTools {
   private threatDatabase: Map<string, ThreatData> = new Map();
 
@@ -514,13 +524,13 @@ export class SecurityAnalysisTools {
   private async simulateVulnerabilityScan(
     target: string,
     scanType: string
-  ): Promise<any[]> {
+  ): Promise<Vulnerability[]> {
     // Simulated vulnerability database - in production, this would integrate with real scanners
-    const vulnerabilityTemplates = [
+    const vulnerabilityTemplates: Vulnerability[] = [
       {
         id: "CVE-2024-0001",
         title: "Remote Code Execution in Web Server",
-        severity: "CRITICAL",
+        severity: "CRITICAL" as const,
         description:
           "Buffer overflow vulnerability allows remote code execution",
         remediation: "Update to latest version and apply security patches",
@@ -532,7 +542,7 @@ export class SecurityAnalysisTools {
       {
         id: "CVE-2024-0002",
         title: "SQL Injection in Login Form",
-        severity: "HIGH",
+        severity: "HIGH" as const,
         description: "Authentication bypass via SQL injection",
         remediation: "Implement parameterized queries and input validation",
         references: ["https://owasp.org/www-community/attacks/SQL_Injection"],
@@ -541,7 +551,7 @@ export class SecurityAnalysisTools {
       {
         id: "CVE-2024-0003",
         title: "Cross-Site Scripting (XSS)",
-        severity: "MEDIUM",
+        severity: "MEDIUM" as const,
         description: "Stored XSS vulnerability in user comments",
         remediation: "Implement output encoding and Content Security Policy",
         references: ["https://owasp.org/www-community/attacks/xss/"],
@@ -560,7 +570,7 @@ export class SecurityAnalysisTools {
   }
 
   private calculateVulnerabilityRisk(
-    vulnerabilities: any[]
+    vulnerabilities: Vulnerability[]
   ): SecurityThreat["severity"] {
     const criticalCount = vulnerabilities.filter(
       (v) => v.severity === "CRITICAL"
@@ -576,7 +586,7 @@ export class SecurityAnalysisTools {
   }
 
   private generateVulnerabilityRecommendations(
-    vulnerabilities: any[]
+    vulnerabilities: Vulnerability[]
   ): string[] {
     return [
       "Prioritize patching critical and high severity vulnerabilities",
@@ -587,7 +597,9 @@ export class SecurityAnalysisTools {
     ];
   }
 
-  private createRemediationPlan(vulnerabilities: any[]): RemediationItem[] {
+  private createRemediationPlan(
+    vulnerabilities: Vulnerability[]
+  ): RemediationItem[] {
     return vulnerabilities.map((vuln) => ({
       priority: vuln.severity,
       description: `Fix ${vuln.title}`,
@@ -610,7 +622,7 @@ export class SecurityAnalysisTools {
   }
 
   private async checkCompliance(
-    vulnerabilities: any[],
+    vulnerabilities: Vulnerability[],
     framework: string
   ): Promise<ComplianceStatus> {
     const totalChecks = 10;
@@ -634,8 +646,8 @@ export class SecurityAnalysisTools {
   private async getSecurityConceptExplanation(
     conceptKey: string,
     skillLevel: string
-  ): Promise<any> {
-    const explanations: Record<string, any> = {
+  ): Promise<SecurityConceptExplanation> {
+    const explanations: Record<string, SecurityConceptExplanation> = {
       sql_injection: {
         description:
           "SQL Injection is a code injection technique that exploits vulnerabilities in database queries.",
