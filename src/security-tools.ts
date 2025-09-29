@@ -428,7 +428,7 @@ export class SecurityAnalysisTools {
 
   private async detectThreatsInLogLine(
     logLine: string,
-    analysisType: string
+    _analysisType: string
   ): Promise<SecurityThreat[]> {
     const threats: SecurityThreat[] = [];
     const lowerLine = logLine.toLowerCase();
@@ -471,7 +471,7 @@ export class SecurityAnalysisTools {
 
   private generateSecurityRecommendations(
     threats: SecurityThreat[],
-    analysisType: string
+    _analysisType: string
   ): string[] {
     const recommendations = [
       "Implement continuous monitoring and alerting for detected threat patterns",
@@ -504,7 +504,7 @@ export class SecurityAnalysisTools {
 
   private getIncidentResponseSteps(
     riskLevel: string,
-    threats: SecurityThreat[]
+    _threats: SecurityThreat[]
   ): string[] {
     const baseSteps = [
       "Document all findings and maintain chain of custody",
@@ -522,7 +522,7 @@ export class SecurityAnalysisTools {
   }
 
   private async simulateVulnerabilityScan(
-    target: string,
+    _target: string,
     scanType: string
   ): Promise<Vulnerability[]> {
     // Simulated vulnerability database - in production, this would integrate with real scanners
@@ -586,7 +586,7 @@ export class SecurityAnalysisTools {
   }
 
   private generateVulnerabilityRecommendations(
-    vulnerabilities: Vulnerability[]
+    _vulnerabilities: Vulnerability[]
   ): string[] {
     return [
       "Prioritize patching critical and high severity vulnerabilities",
@@ -901,8 +901,8 @@ export class SecurityAnalysisTools {
   }
 
   private getContainmentSteps(
-    incidentType: string,
-    severity: string
+    _incidentType: string,
+    _severity: string
   ): string[] {
     return [
       "Isolate affected systems and networks",
@@ -913,7 +913,7 @@ export class SecurityAnalysisTools {
     ];
   }
 
-  private getEradicationPlan(incidentType: string): string[] {
+  private getEradicationPlan(_incidentType: string): string[] {
     return [
       "Remove malicious code and unauthorized access",
       "Patch vulnerabilities that enabled the incident",
@@ -924,8 +924,8 @@ export class SecurityAnalysisTools {
   }
 
   private getRecoveryProcedure(
-    incidentType: string,
-    affectedSystems: string
+    _incidentType: string,
+    _affectedSystems: string
   ): string[] {
     return [
       "Restore systems from clean backups",
@@ -936,7 +936,7 @@ export class SecurityAnalysisTools {
     ];
   }
 
-  private getLessonsLearned(incidentType: string): string[] {
+  private getLessonsLearned(_incidentType: string): string[] {
     return [
       "Conduct post-incident review meeting",
       "Document what worked well and what didn't",
@@ -947,7 +947,7 @@ export class SecurityAnalysisTools {
   }
 
   private getComplianceRequirements(
-    incidentType: string,
+    _incidentType: string,
     severity: string
   ): string[] {
     const requirements = [
@@ -979,7 +979,7 @@ export class SecurityAnalysisTools {
   }
 
   private getResponseTimeline(
-    incidentType: string,
+    _incidentType: string,
     severity: string
   ): string[] {
     if (severity === "CRITICAL") {
@@ -999,7 +999,7 @@ export class SecurityAnalysisTools {
     ];
   }
 
-  private getDocumentationRequirements(incidentType: string): string[] {
+  private getDocumentationRequirements(_incidentType: string): string[] {
     return [
       "Timeline of events and actions taken",
       "Evidence collected and chain of custody",
@@ -1024,7 +1024,7 @@ export class SecurityAnalysisTools {
 
   private calculateThreatConfidence(
     logLine: string,
-    indicator: string
+    _indicator: string
   ): number {
     // Simple confidence calculation based on context
     const contextKeywords = [

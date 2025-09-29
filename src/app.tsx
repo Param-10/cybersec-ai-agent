@@ -631,18 +631,19 @@ export default function SecBotInterface() {
               </em>
             </p>
             <div className="space-y-4">
-              {quickActions.map((category, categoryIndex) => (
+              {quickActions.map((category, _categoryIndex) => (
                 <div
-                  key={categoryIndex}
+                  key={category.category}
                   className="bg-slate-800/30 rounded-lg p-4 border border-slate-600/20"
                 >
                   <h4 className="text-slate-200 font-medium mb-3 text-sm">
                     {category.category}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {category.questions.map((question, questionIndex) => (
+                    {category.questions.map((question, _questionIndex) => (
                       <button
-                        key={questionIndex}
+                        type="button"
+                        key={`${category.category}-${question.label}`}
                         className="p-3 bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600/20 hover:border-blue-500/40 rounded-lg text-sm text-slate-300 hover:text-slate-100 transition-all duration-200 text-left"
                         onClick={() => {
                           setAgentInput(question.command);
