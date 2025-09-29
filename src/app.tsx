@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { useAgent } from "agents/react";
 import { isToolUIPart } from "ai";
 import { useAgentChat } from "agents/ai-react";
@@ -27,6 +27,69 @@ interface SecurityContext {
   threatLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   analysisType: string;
   recommendedActions: string[];
+}
+
+// Extracted from inside component to satisfy noNestedComponentDefinitions
+function SecurityAlert({ context }: { context: SecurityContext }) {
+  const alertColors = {
+    LOW: "bg-green-100 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-400",
+    MEDIUM:
+      "bg-yellow-100 dark:bg-yellow-900/20 border-yellow-500 text-yellow-800 dark:text-yellow-400",
+    HIGH: "bg-orange-100 dark:bg-orange-900/20 border-orange-500 text-orange-800 dark:text-orange-400",
+    CRITICAL:
+      "bg-red-100 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-400"
+  } as const;
+
+  return (
+    <div
+      className={`border-l-4 p-4 mb-4 rounded-r-lg ${alertColors[context.threatLevel]}`}
+    >
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          {context.threatLevel === "CRITICAL" && (
+            <span className="text-2xl" role="img" aria-label="Critical alert">
+              🚨
+            </span>
+          )}
+          {context.threatLevel === "HIGH" && (
+            <span className="text-2xl" role="img" aria-label="High alert">
+              ⚠️
+            </span>
+          )}
+          {context.threatLevel === "MEDIUM" && (
+            <span className="text-2xl" role="img" aria-label="Medium alert">
+              ⚡
+            </span>
+          )}
+          {context.threatLevel === "LOW" && (
+            <span className="text-2xl" role="img" aria-label="Information">
+              ℹ️
+            </span>
+          )}
+        </div>
+        <div className="ml-3">
+          <h3 className="text-lg font-medium">
+            {context.threatLevel} Security Alert - {context.analysisType}
+          </h3>
+          {context.recommendedActions.length > 0 && (
+            <div className="mt-2">
+              <h4 className="font-medium">Recommended Actions:</h4>
+              <ul className="list-disc list-inside mt-1">
+                {context.recommendedActions.map((action) => (
+                  <li
+                    key={`${context.analysisType}-${context.threatLevel}-${action}`}
+                    className="text-sm"
+                  >
+                    {action}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Tools that require human confirmation
@@ -95,22 +158,35 @@ export default function SecBotInterface() {
     agent
   });
 
-  useEffect(() => {
-    initializeVoiceCapabilities();
-    // Always use dark mode for cybersecurity theme
-    document.documentElement.classList.add("dark");
-    document.documentElement.classList.remove("light");
-  }, []);
+  const handleVoiceSubmit = useCallback(async () => {
+    if (!agentInput.trim()) return;
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
+    const message = agentInput;
+    setAgentInput("");
+    setTextareaHeight("auto");
 
-  useEffect(() => {
-    agentMessages.length > 0 && scrollToBottom();
-  }, [agentMessages, scrollToBottom]);
+    await sendMessage(
+      {
+        role: "user",
+        parts: [{ type: "text", text: message }]
+      },
+      {
+        body: {}
+      }
+    );
+  }, [agentInput, sendMessage]);
 
-  const initializeVoiceCapabilities = () => {
+  const handleVoiceInput = useCallback(
+    (transcript: string) => {
+      setAgentInput(transcript);
+      setTimeout(() => {
+        handleVoiceSubmit();
+      }, 100);
+    },
+    [handleVoiceSubmit]
+  );
+
+  const initializeVoiceCapabilities = useCallback(() => {
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -141,7 +217,24 @@ export default function SecBotInterface() {
       synthesisRef.current = window.speechSynthesis;
       setVoiceSupported(true);
     }
-  };
+  }, [handleVoiceInput]);
+
+  useEffect(() => {
+    initializeVoiceCapabilities();
+    // Always use dark mode for cybersecurity theme
+    document.documentElement.classList.add("dark");
+    document.documentElement.classList.remove("light");
+  }, [initializeVoiceCapabilities]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
+
+  useEffect(() => {
+    agentMessages.length > 0 && scrollToBottom();
+  }, [agentMessages, scrollToBottom]);
+
+  // initializeVoiceCapabilities moved & memoized above
 
   const toggleVoiceInput = () => {
     if (!voiceSupported || !recognitionRef.current) return;
@@ -155,33 +248,9 @@ export default function SecBotInterface() {
     }
   };
 
-  const handleVoiceInput = (transcript: string) => {
-    setAgentInput(transcript);
+  // handleVoiceInput memoized above
 
-    // Auto-submit voice input after a brief delay
-    setTimeout(() => {
-      handleVoiceSubmit();
-    }, 100);
-  };
-
-  const handleVoiceSubmit = async () => {
-    if (!agentInput.trim()) return;
-
-    const message = agentInput;
-    setAgentInput("");
-    setTextareaHeight("auto");
-
-    // Send message to agent
-    await sendMessage(
-      {
-        role: "user",
-        parts: [{ type: "text", text: message }]
-      },
-      {
-        body: {}
-      }
-    );
-  };
+  // handleVoiceSubmit moved above & memoized
 
   const handleAgentInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -227,56 +296,7 @@ export default function SecBotInterface() {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const SecurityAlert = ({ context }: { context: SecurityContext }) => {
-    const alertColors = {
-      LOW: "bg-green-100 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-400",
-      MEDIUM:
-        "bg-yellow-100 dark:bg-yellow-900/20 border-yellow-500 text-yellow-800 dark:text-yellow-400",
-      HIGH: "bg-orange-100 dark:bg-orange-900/20 border-orange-500 text-orange-800 dark:text-orange-400",
-      CRITICAL:
-        "bg-red-100 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-400"
-    };
-
-    return (
-      <div
-        className={`border-l-4 p-4 mb-4 rounded-r-lg ${alertColors[context.threatLevel]}`}
-      >
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            {context.threatLevel === "CRITICAL" && (
-              <span className="text-2xl">🚨</span>
-            )}
-            {context.threatLevel === "HIGH" && (
-              <span className="text-2xl">⚠️</span>
-            )}
-            {context.threatLevel === "MEDIUM" && (
-              <span className="text-2xl">⚡</span>
-            )}
-            {context.threatLevel === "LOW" && (
-              <span className="text-2xl">ℹ️</span>
-            )}
-          </div>
-          <div className="ml-3">
-            <h3 className="text-lg font-medium">
-              {context.threatLevel} Security Alert - {context.analysisType}
-            </h3>
-            {context.recommendedActions.length > 0 && (
-              <div className="mt-2">
-                <h4 className="font-medium">Recommended Actions:</h4>
-                <ul className="list-disc list-inside mt-1">
-                  {context.recommendedActions.map((action, index) => (
-                    <li key={index} className="text-sm">
-                      {action}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // (Removed nested SecurityAlert - external component is used)
 
   const quickActions = [
     {
@@ -521,10 +541,12 @@ export default function SecBotInterface() {
                     )}
 
                     <div className="space-y-2">
-                      {m.parts?.map((part, i) => {
+                      {m.parts?.map((part) => {
+                        // Stable key derivation avoiding array index usage
                         if (part.type === "text") {
+                          const textKey = `msg-${m.id}-text-${part.text.length}-${part.text.slice(0, 16)}`;
                           return (
-                            <div key={i}>
+                            <div key={textKey}>
                               <Card
                                 className={`p-4 ${
                                   isUser
@@ -533,7 +555,7 @@ export default function SecBotInterface() {
                                 }`}
                               >
                                 <MemoizedMarkdown
-                                  id={`${m.id}-${i}`}
+                                  id={textKey}
                                   content={part.text}
                                 />
                               </Card>
@@ -559,10 +581,11 @@ export default function SecBotInterface() {
                             toolsRequiringConfirmation.includes(
                               toolName as keyof typeof tools
                             );
+                          const toolKey = `tool-${toolCallId}`;
 
                           return (
                             <ToolInvocationCard
-                              key={`${toolCallId}-${i}`}
+                              key={toolKey}
                               toolUIPart={part}
                               toolCallId={toolCallId}
                               needsConfirmation={needsConfirmation}
@@ -776,6 +799,7 @@ function HasWorkersAI() {
     provider?: string;
     model?: string;
   } | null>(null);
+  const workersAITitleId = useId();
 
   useEffect(() => {
     hasWorkersAIPromise.then(setHasWorkersAI).catch(() => {
@@ -793,6 +817,8 @@ function HasWorkersAI() {
             <div className="flex items-start gap-3">
               <div className="p-2 bg-red-900/30 rounded-full">
                 <svg
+                  role="img"
+                  aria-labelledby={workersAITitleId}
                   className="w-5 h-5 text-red-400"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -802,6 +828,7 @@ function HasWorkersAI() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
+                  <title id={workersAITitleId}>Workers AI not available</title>
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
