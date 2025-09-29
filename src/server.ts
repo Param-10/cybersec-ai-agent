@@ -34,7 +34,8 @@ const model = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
  * Provides expert cybersecurity analysis, threat detection, and incident response guidance
  */
 export class Chat extends AIChatAgent<Env> {
-  private userSkillLevel: 'beginner' | 'intermediate' | 'advanced' = 'intermediate';
+  private userSkillLevel: "beginner" | "intermediate" | "advanced" =
+    "intermediate";
 
   /**
    * Handles incoming chat messages and manages the response stream with cybersecurity focus
@@ -68,7 +69,7 @@ export class Chat extends AIChatAgent<Env> {
 
         // Create Workers AI provider
         const workersAI = createWorkersAI({
-          binding: this.env.AI,
+          binding: this.env.AI
         });
 
         const result = streamText({
@@ -79,15 +80,17 @@ export class Chat extends AIChatAgent<Env> {
           onFinish: async (finishResult) => {
             // Log security interaction
             await this.logSecurityInteraction({
-              userQuery: typeof lastMessage.parts[0] === 'object' && lastMessage.parts[0].type === 'text' 
-                ? lastMessage.parts[0].text 
-                : 'Non-text message',
+              userQuery:
+                typeof lastMessage.parts[0] === "object" &&
+                lastMessage.parts[0].type === "text"
+                  ? lastMessage.parts[0].text
+                  : "Non-text message",
               agentResponse: finishResult.text,
               securityContext,
               usage: finishResult.usage,
               timestamp: new Date().toISOString()
             });
-            
+
             // Call the original onFinish callback
             if (onFinish) {
               onFinish(finishResult as any);
@@ -118,9 +121,9 @@ export class Chat extends AIChatAgent<Env> {
 
 🎯 CURRENT CONTEXT:
 - User skill level: ${this.userSkillLevel}
-- Security domain: ${context.domain || 'general'}
-- Analysis type: ${context.analysisType || 'consultative'}
-- Urgency level: ${context.urgency || 'normal'}
+- Security domain: ${context.domain || "general"}
+- Analysis type: ${context.analysisType || "consultative"}
+- Urgency level: ${context.urgency || "normal"}
 
 📋 RESPONSE GUIDELINES:
 - Provide accurate, ethical security guidance only
@@ -149,35 +152,40 @@ If the user asks to schedule a security task, use the schedule tool to schedule 
    * Analyze user message for security context and urgency
    */
   private async analyzeSecurityContext(message: any): Promise<any> {
-    const content = typeof message.parts[0] === 'object' && message.parts[0].type === 'text' 
-      ? message.parts[0].text 
-      : '';
-    
+    const content =
+      typeof message.parts[0] === "object" && message.parts[0].type === "text"
+        ? message.parts[0].text
+        : "";
+
     const securityKeywords = {
-      'vulnerability': { domain: 'vuln-assessment', urgency: 'high' },
-      'malware': { domain: 'threat-analysis', urgency: 'high' },
-      'phishing': { domain: 'threat-analysis', urgency: 'medium' },
-      'incident': { domain: 'incident-response', urgency: 'high' },
-      'firewall': { domain: 'network-security', urgency: 'low' },
-      'penetration': { domain: 'pentest', urgency: 'medium' },
-      'sql injection': { domain: 'web-security', urgency: 'high' },
-      'xss': { domain: 'web-security', urgency: 'high' },
-      'ddos': { domain: 'network-security', urgency: 'high' },
-      'ransomware': { domain: 'malware-analysis', urgency: 'critical' },
-      'breach': { domain: 'incident-response', urgency: 'critical' }
+      vulnerability: { domain: "vuln-assessment", urgency: "high" },
+      malware: { domain: "threat-analysis", urgency: "high" },
+      phishing: { domain: "threat-analysis", urgency: "medium" },
+      incident: { domain: "incident-response", urgency: "high" },
+      firewall: { domain: "network-security", urgency: "low" },
+      penetration: { domain: "pentest", urgency: "medium" },
+      "sql injection": { domain: "web-security", urgency: "high" },
+      xss: { domain: "web-security", urgency: "high" },
+      ddos: { domain: "network-security", urgency: "high" },
+      ransomware: { domain: "malware-analysis", urgency: "critical" },
+      breach: { domain: "incident-response", urgency: "critical" }
     };
 
     for (const [keyword, context] of Object.entries(securityKeywords)) {
       if (content.toLowerCase().includes(keyword)) {
         return {
           ...context,
-          analysisType: 'targeted',
+          analysisType: "targeted",
           detectedThreat: keyword
         };
       }
     }
 
-    return { domain: 'general', urgency: 'normal', analysisType: 'consultative' };
+    return {
+      domain: "general",
+      urgency: "normal",
+      analysisType: "consultative"
+    };
   }
 
   /**
@@ -190,21 +198,28 @@ If the user asks to schedule a security task, use the schedule tool to schedule 
         // Silently skip logging in local development
         return;
       }
-      
+
       // @ts-ignore - Durable Object storage returns unknown, but we handle it safely
-      const stored = await (this.state as any).storage.get('security_interactions');
-      const interactions: any[] = Array.isArray(stored) ? stored as any[] : [];
+      const stored = await (this.state as any).storage.get(
+        "security_interactions"
+      );
+      const interactions: any[] = Array.isArray(stored)
+        ? (stored as any[])
+        : [];
       interactions.push(interaction);
-      
+
       // Keep only last 100 interactions
       if (interactions.length > 100) {
         interactions.splice(0, interactions.length - 100);
       }
-      
+
       // @ts-ignore - Durable Object storage put accepts any serializable value
-      await (this.state as any).storage.put('security_interactions', interactions);
+      await (this.state as any).storage.put(
+        "security_interactions",
+        interactions
+      );
     } catch (error: any) {
-      console.error('Error logging security interaction:', error);
+      console.error("Error logging security interaction:", error);
     }
   }
   async executeTask(description: string, _task: Schedule<string>) {
@@ -257,7 +272,7 @@ export default {
     // Route the request to our SecBot agent or return 404 if not found
     return (
       (await routeAgentRequest(request, env)) ||
-      new Response("SecBot endpoint not found", { 
+      new Response("SecBot endpoint not found", {
         status: 404,
         headers: { "Content-Type": "application/json" }
       })

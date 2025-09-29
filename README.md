@@ -13,7 +13,7 @@
 **SecBot is designed for educational and guidance purposes only:**
 
 - 📚 **Educational Purpose**: Provides security concepts, best practices, and simulated analysis - not actual security scanning
-- 🚫 **No Real System Access**: Cannot connect to or scan actual networks, databases, or systems  
+- 🚫 **No Real System Access**: Cannot connect to or scan actual networks, databases, or systems
 - 🎯 **Simulated Analysis**: Security assessments are template-based, not live threat intelligence
 - 👨‍💼 **Professional Consultation**: For critical security issues, always consult qualified cybersecurity professionals
 - 🧪 **Not for Production**: Do not rely on SecBot for production security decisions
@@ -33,6 +33,7 @@
 ## 🎯 Security Capabilities
 
 ### 📚 Security Education
+
 - Cross-Site Scripting (XSS)
 - SQL Injection attacks
 - CSRF (Cross-Site Request Forgery)
@@ -42,18 +43,21 @@
 - OWASP Top 10 vulnerabilities
 
 ### 🔍 Security Analysis (Simulated)
+
 - Network log analysis
 - Vulnerability assessments
 - Traffic pattern analysis
 - Security configuration reviews
 
 ### 🚨 Incident Response
+
 - Ransomware response procedures
 - Data breach protocols
 - Malware infection handling
 - Phishing incident management
 
 ### 🛡️ Best Practices
+
 - Password security guidelines
 - WordPress security hardening
 - Zero-trust implementation
@@ -171,7 +175,9 @@ const explainYourConcept = tool({
   description: "Explain your custom security concept",
   parameters: z.object({
     concept: z.string(),
-    skillLevel: z.enum(['beginner', 'intermediate', 'advanced']).default('intermediate')
+    skillLevel: z
+      .enum(["beginner", "intermediate", "advanced"])
+      .default("intermediate")
   }),
   execute: async (params) => {
     const securityTools = new SecurityAnalysisTools();
@@ -185,7 +191,7 @@ const explainYourConcept = tool({
 Modify the interface in `app.tsx`:
 
 - **Sample Questions**: Update `quickActions` array with new categories and questions
-- **Theme Colors**: Modify CSS variables in `styles.css` 
+- **Theme Colors**: Modify CSS variables in `styles.css`
 - **Voice Settings**: Configure speech recognition parameters
 - **Analysis Modes**: Add new security analysis types to the dropdown
 
@@ -199,7 +205,7 @@ const checkFileHash = tool({
   description: "Check file hash against threat databases",
   parameters: z.object({
     hash: z.string(),
-    hashType: z.enum(['md5', 'sha1', 'sha256'])
+    hashType: z.enum(["md5", "sha1", "sha256"])
   }),
   execute: async ({ hash, hashType }) => {
     // Add proper API integration with error handling
@@ -213,27 +219,33 @@ const checkFileHash = tool({
 Try these sample questions:
 
 **Security Education:**
+
 - "Explain Cross-Site Scripting (XSS) attacks"
 - "What are the OWASP Top 10 vulnerabilities?"
 - "How do SQL injection attacks work?"
 
 **Incident Response:**
+
 - "We detected ransomware. What should we do?"
 - "Guide me through malware incident response"
 
 **Best Practices:**
+
 - "How do I secure my WordPress website?"
 - "What's the best password security approach?"
 
 ## 🌐 Deployment Options
 
 ### Cloudflare Workers (Recommended)
+
 ```bash
 npm run deploy
 ```
 
 ### Custom Domain
+
 Update your `wrangler.jsonc`:
+
 ```jsonc
 {
   "routes": [
@@ -252,6 +264,7 @@ Update your `wrangler.jsonc`:
 ## 📊 Usage Analytics
 
 Monitor SecBot usage through Cloudflare Workers Analytics:
+
 - Response times and performance
 - Error rates and debugging
 - Usage patterns (without personal data)

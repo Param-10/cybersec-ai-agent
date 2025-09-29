@@ -23,7 +23,7 @@ import {
 } from "@phosphor-icons/react";
 
 interface SecurityContext {
-  threatLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  threatLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   analysisType: string;
   recommendedActions: string[];
 }
@@ -44,8 +44,8 @@ export default function SecBotInterface() {
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [securityContext] = useState<SecurityContext | null>(null);
-  const [analysisMode, setAnalysisMode] = useState<string>('general');
-  
+  const [analysisMode, setAnalysisMode] = useState<string>("general");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
@@ -87,30 +87,31 @@ export default function SecBotInterface() {
   }, [agentMessages, scrollToBottom]);
 
   const initializeVoiceCapabilities = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
-      
+
       if (recognitionRef.current) {
         recognitionRef.current.continuous = false;
         recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = 'en-US';
-        
+        recognitionRef.current.lang = "en-US";
+
         recognitionRef.current.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript;
           handleVoiceInput(transcript);
         };
-        
+
         recognitionRef.current.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
+          console.error("Speech recognition error:", event.error);
           setIsListening(false);
         };
-        
+
         recognitionRef.current.onend = () => {
           setIsListening(false);
         };
       }
-      
+
       synthesisRef.current = window.speechSynthesis;
       setVoiceSupported(true);
     }
@@ -118,7 +119,7 @@ export default function SecBotInterface() {
 
   const toggleVoiceInput = () => {
     if (!voiceSupported || !recognitionRef.current) return;
-    
+
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -130,13 +131,12 @@ export default function SecBotInterface() {
 
   const handleVoiceInput = (transcript: string) => {
     setAgentInput(transcript);
-    
+
     // Auto-submit voice input after a brief delay
     setTimeout(() => {
-      handleAgentSubmit(new Event('submit') as any);
+      handleAgentSubmit(new Event("submit") as any);
     }, 100);
   };
-
 
   const handleAgentInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -167,7 +167,6 @@ export default function SecBotInterface() {
     );
   };
 
-
   const pendingToolCallConfirmation = agentMessages.some((m: UIMessage) =>
     m.parts?.some(
       (part) =>
@@ -185,20 +184,32 @@ export default function SecBotInterface() {
 
   const SecurityAlert = ({ context }: { context: SecurityContext }) => {
     const alertColors = {
-      LOW: 'bg-green-100 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-400',
-      MEDIUM: 'bg-yellow-100 dark:bg-yellow-900/20 border-yellow-500 text-yellow-800 dark:text-yellow-400',
-      HIGH: 'bg-orange-100 dark:bg-orange-900/20 border-orange-500 text-orange-800 dark:text-orange-400',
-      CRITICAL: 'bg-red-100 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-400'
+      LOW: "bg-green-100 dark:bg-green-900/20 border-green-500 text-green-800 dark:text-green-400",
+      MEDIUM:
+        "bg-yellow-100 dark:bg-yellow-900/20 border-yellow-500 text-yellow-800 dark:text-yellow-400",
+      HIGH: "bg-orange-100 dark:bg-orange-900/20 border-orange-500 text-orange-800 dark:text-orange-400",
+      CRITICAL:
+        "bg-red-100 dark:bg-red-900/20 border-red-500 text-red-800 dark:text-red-400"
     };
 
     return (
-      <div className={`border-l-4 p-4 mb-4 rounded-r-lg ${alertColors[context.threatLevel]}`}>
+      <div
+        className={`border-l-4 p-4 mb-4 rounded-r-lg ${alertColors[context.threatLevel]}`}
+      >
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            {context.threatLevel === 'CRITICAL' && <span className="text-2xl">🚨</span>}
-            {context.threatLevel === 'HIGH' && <span className="text-2xl">⚠️</span>}
-            {context.threatLevel === 'MEDIUM' && <span className="text-2xl">⚡</span>}
-            {context.threatLevel === 'LOW' && <span className="text-2xl">ℹ️</span>}
+            {context.threatLevel === "CRITICAL" && (
+              <span className="text-2xl">🚨</span>
+            )}
+            {context.threatLevel === "HIGH" && (
+              <span className="text-2xl">⚠️</span>
+            )}
+            {context.threatLevel === "MEDIUM" && (
+              <span className="text-2xl">⚡</span>
+            )}
+            {context.threatLevel === "LOW" && (
+              <span className="text-2xl">ℹ️</span>
+            )}
           </div>
           <div className="ml-3">
             <h3 className="text-lg font-medium">
@@ -209,7 +220,9 @@ export default function SecBotInterface() {
                 <h4 className="font-medium">Recommended Actions:</h4>
                 <ul className="list-disc list-inside mt-1">
                   {context.recommendedActions.map((action, index) => (
-                    <li key={index} className="text-sm">{action}</li>
+                    <li key={index} className="text-sm">
+                      {action}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -224,37 +237,89 @@ export default function SecBotInterface() {
     {
       category: "🎓 Security Education",
       questions: [
-        { label: "What is Cross-Site Scripting (XSS)?", command: "Explain Cross-Site Scripting (XSS) attacks" },
-        { label: "How do SQL injection attacks work?", command: "Explain SQL injection attacks with examples" },
-        { label: "What is a DDoS attack?", command: "Explain DDoS attacks and how to prevent them" },
-        { label: "Tell me about phishing attacks", command: "Explain phishing attacks and prevention methods" }
+        {
+          label: "What is Cross-Site Scripting (XSS)?",
+          command: "Explain Cross-Site Scripting (XSS) attacks"
+        },
+        {
+          label: "How do SQL injection attacks work?",
+          command: "Explain SQL injection attacks with examples"
+        },
+        {
+          label: "What is a DDoS attack?",
+          command: "Explain DDoS attacks and how to prevent them"
+        },
+        {
+          label: "Tell me about phishing attacks",
+          command: "Explain phishing attacks and prevention methods"
+        }
       ]
     },
     {
-      category: "🔍 Security Analysis", 
+      category: "🔍 Security Analysis",
       questions: [
-        { label: "Analyze network logs", command: "Analyze these Apache logs for suspicious activity:\n192.168.1.100 - - [29/Sep/2025:10:15:32] \"GET /admin/login.php\" 200 1234\n192.168.1.100 - - [29/Sep/2025:10:15:33] \"POST /admin/login.php\" 401 567\n192.168.1.100 - - [29/Sep/2025:10:15:34] \"POST /admin/login.php\" 401 567" },
-        { label: "Check for vulnerabilities", command: "Check Apache HTTP Server version 2.4.41 for security vulnerabilities" },
-        { label: "Analyze suspicious traffic", command: "Analyze this network traffic for potential security threats" },
-        { label: "Security assessment", command: "Perform a general security assessment of my web application" }
+        {
+          label: "Analyze network logs",
+          command:
+            'Analyze these Apache logs for suspicious activity:\n192.168.1.100 - - [29/Sep/2025:10:15:32] "GET /admin/login.php" 200 1234\n192.168.1.100 - - [29/Sep/2025:10:15:33] "POST /admin/login.php" 401 567\n192.168.1.100 - - [29/Sep/2025:10:15:34] "POST /admin/login.php" 401 567'
+        },
+        {
+          label: "Check for vulnerabilities",
+          command:
+            "Check Apache HTTP Server version 2.4.41 for security vulnerabilities"
+        },
+        {
+          label: "Analyze suspicious traffic",
+          command: "Analyze this network traffic for potential security threats"
+        },
+        {
+          label: "Security assessment",
+          command: "Perform a general security assessment of my web application"
+        }
       ]
     },
     {
       category: "🚨 Incident Response",
       questions: [
-        { label: "Ransomware detected", command: "We detected ransomware on our file server. Guide me through immediate response steps." },
-        { label: "Data breach response", command: "What should I do if I suspect a data breach?" },
-        { label: "Malware incident", command: "Help me respond to a malware infection on user workstation" },
-        { label: "Phishing email received", command: "Users received suspicious phishing emails. What's the response procedure?" }
+        {
+          label: "Ransomware detected",
+          command:
+            "We detected ransomware on our file server. Guide me through immediate response steps."
+        },
+        {
+          label: "Data breach response",
+          command: "What should I do if I suspect a data breach?"
+        },
+        {
+          label: "Malware incident",
+          command: "Help me respond to a malware infection on user workstation"
+        },
+        {
+          label: "Phishing email received",
+          command:
+            "Users received suspicious phishing emails. What's the response procedure?"
+        }
       ]
     },
     {
       category: "🛡️ Best Practices",
       questions: [
-        { label: "Secure my WordPress site", command: "How do I secure my WordPress website?" },
-        { label: "Password security guide", command: "What are the best practices for password security?" },
-        { label: "OWASP Top 10", command: "What are the OWASP Top 10 vulnerabilities?" },
-        { label: "Zero-trust security", command: "How do I implement a zero-trust security model?" }
+        {
+          label: "Secure my WordPress site",
+          command: "How do I secure my WordPress website?"
+        },
+        {
+          label: "Password security guide",
+          command: "What are the best practices for password security?"
+        },
+        {
+          label: "OWASP Top 10",
+          command: "What are the OWASP Top 10 vulnerabilities?"
+        },
+        {
+          label: "Zero-trust security",
+          command: "How do I implement a zero-trust security model?"
+        }
       ]
     }
   ];
@@ -262,7 +327,7 @@ export default function SecBotInterface() {
   return (
     <div className="cybersec-interface min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <HasWorkersAI />
-      
+
       {/* Header */}
       <div className="border-b border-blue-800/30 bg-slate-800/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -272,12 +337,14 @@ export default function SecBotInterface() {
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 SecBot
               </h1>
-              <p className="text-xs text-slate-400">Cybersecurity AI Assistant</p>
+              <p className="text-xs text-slate-400">
+                Cybersecurity AI Assistant
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <select 
+            <select
               value={analysisMode}
               onChange={(e) => setAnalysisMode(e.target.value)}
               className="bg-slate-700 text-slate-200 border border-slate-600 rounded-lg px-3 py-1 text-sm"
@@ -288,8 +355,6 @@ export default function SecBotInterface() {
               <option value="incident-response">Incident Response</option>
               <option value="compliance">Compliance Check</option>
             </select>
-
-
 
             <Button
               variant="ghost"
@@ -307,7 +372,7 @@ export default function SecBotInterface() {
       {/* Main Chat Area */}
       <div className="max-w-6xl mx-auto p-4 flex flex-col min-h-[calc(100vh-5rem)]">
         {securityContext && <SecurityAlert context={securityContext} />}
-        
+
         {/* Messages Container */}
         <div className="flex-1 overflow-y-auto space-y-4 mb-4">
           {agentMessages.length === 0 && (
@@ -320,8 +385,13 @@ export default function SecBotInterface() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-200 mb-2">Welcome to SecBot! 🛡️</h2>
-                    <p className="text-slate-400 mb-6">I'm your AI-powered cybersecurity assistant. I can help you with:</p>
+                    <h2 className="text-2xl font-bold text-slate-200 mb-2">
+                      Welcome to SecBot! 🛡️
+                    </h2>
+                    <p className="text-slate-400 mb-6">
+                      I'm your AI-powered cybersecurity assistant. I can help
+                      you with:
+                    </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                     <div className="space-y-3">
@@ -331,7 +401,9 @@ export default function SecBotInterface() {
                       </div>
                       <div className="flex items-center gap-2 text-slate-300">
                         <span className="text-blue-400">🛡️</span>
-                        <span>Vulnerability assessment and security scanning</span>
+                        <span>
+                          Vulnerability assessment and security scanning
+                        </span>
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -345,39 +417,58 @@ export default function SecBotInterface() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Limitations and Disclaimers */}
                   <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <h3 className="text-amber-400 font-medium text-sm mb-2 flex items-center gap-2">
                       <span>⚠️</span> Important Limitations
                     </h3>
                     <div className="text-xs text-amber-200/80 space-y-1">
-                      <p>• <strong>Educational Purpose:</strong> SecBot provides guidance and simulated analysis - not actual security scanning</p>
-                      <p>• <strong>No Real System Access:</strong> Cannot connect to or scan actual networks, databases, or systems</p>
-                      <p>• <strong>Simulated Analysis:</strong> Security assessments are template-based, not live threat intelligence</p>
-                      <p>• <strong>Professional Consultation:</strong> For critical security issues, consult qualified cybersecurity professionals</p>
+                      <p>
+                        • <strong>Educational Purpose:</strong> SecBot provides
+                        guidance and simulated analysis - not actual security
+                        scanning
+                      </p>
+                      <p>
+                        • <strong>No Real System Access:</strong> Cannot connect
+                        to or scan actual networks, databases, or systems
+                      </p>
+                      <p>
+                        • <strong>Simulated Analysis:</strong> Security
+                        assessments are template-based, not live threat
+                        intelligence
+                      </p>
+                      <p>
+                        • <strong>Professional Consultation:</strong> For
+                        critical security issues, consult qualified
+                        cybersecurity professionals
+                      </p>
                     </div>
                   </div>
-                  
+
                   <p className="text-slate-500 text-sm mt-4">
-                    {voiceSupported ? 
-                      "Use the microphone for voice input, or type your security question below." :
-                      "Type your security question below to get started."
-                    }
+                    {voiceSupported
+                      ? "Use the microphone for voice input, or type your security question below."
+                      : "Type your security question below to get started."}
                   </p>
                 </div>
               </Card>
             </div>
           )}
-          
+
           {agentMessages.map((m, index) => {
             const isUser = m.role === "user";
-            const showAvatar = index === 0 || agentMessages[index - 1]?.role !== m.role;
+            const showAvatar =
+              index === 0 || agentMessages[index - 1]?.role !== m.role;
 
             return (
               <div key={m.id}>
-                <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex gap-3 max-w-[85%] ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+                <div
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`flex gap-3 max-w-[85%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
+                  >
                     {showAvatar && !isUser ? (
                       <Avatar username={"SecBot"} />
                     ) : (
@@ -419,10 +510,10 @@ export default function SecBotInterface() {
                         if (isToolUIPart(part)) {
                           const toolCallId = part.toolCallId;
                           const toolName = part.type.replace("tool-", "");
-                          const needsConfirmation = toolsRequiringConfirmation.includes(
-                            toolName as keyof typeof tools
-                          );
-
+                          const needsConfirmation =
+                            toolsRequiringConfirmation.includes(
+                              toolName as keyof typeof tools
+                            );
 
                           return (
                             <ToolInvocationCard
@@ -455,7 +546,7 @@ export default function SecBotInterface() {
               </div>
             );
           })}
-          
+
           {status === "streaming" && (
             <div className="flex justify-start">
               <div className="flex gap-3 max-w-[85%]">
@@ -464,8 +555,14 @@ export default function SecBotInterface() {
                   <div className="flex items-center gap-2 text-slate-400">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
                     </div>
                     Analyzing security data...
                   </div>
@@ -479,14 +576,24 @@ export default function SecBotInterface() {
         {/* Sample Questions */}
         {agentMessages.length === 0 && (
           <div className="mb-4">
-            <h3 className="text-slate-400 font-medium mb-2 text-center">Try these sample questions:</h3>
+            <h3 className="text-slate-400 font-medium mb-2 text-center">
+              Try these sample questions:
+            </h3>
             <p className="text-slate-500 text-xs text-center mb-4">
-              <em>Note: These demonstrate SecBot's educational capabilities with simulated responses</em>
+              <em>
+                Note: These demonstrate SecBot's educational capabilities with
+                simulated responses
+              </em>
             </p>
             <div className="space-y-4">
               {quickActions.map((category, categoryIndex) => (
-                <div key={categoryIndex} className="bg-slate-800/30 rounded-lg p-4 border border-slate-600/20">
-                  <h4 className="text-slate-200 font-medium mb-3 text-sm">{category.category}</h4>
+                <div
+                  key={categoryIndex}
+                  className="bg-slate-800/30 rounded-lg p-4 border border-slate-600/20"
+                >
+                  <h4 className="text-slate-200 font-medium mb-3 text-sm">
+                    {category.category}
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {category.questions.map((question, questionIndex) => (
                       <button
@@ -496,7 +603,9 @@ export default function SecBotInterface() {
                           setAgentInput(question.command);
                         }}
                       >
-                        <span className="block font-medium text-blue-300">{question.label}</span>
+                        <span className="block font-medium text-blue-300">
+                          {question.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -520,25 +629,29 @@ export default function SecBotInterface() {
                 type="button"
                 onClick={toggleVoiceInput}
                 className={`rounded-full p-3 h-12 w-12 flex items-center justify-center transition-all duration-200 ${
-                  isListening 
-                    ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  isListening
+                    ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
                 }`}
                 disabled={status === "streaming"}
               >
-                {isListening ? <MicrophoneSlash size={20} /> : <Microphone size={20} />}
+                {isListening ? (
+                  <MicrophoneSlash size={20} />
+                ) : (
+                  <Microphone size={20} />
+                )}
               </Button>
             )}
-            
+
             <div className="flex-1 relative">
               <Textarea
                 disabled={pendingToolCallConfirmation || status === "streaming"}
                 placeholder={
                   pendingToolCallConfirmation
                     ? "Please respond to the tool confirmation above..."
-                    : isListening 
-                    ? "Listening... Speak your security question"
-                    : "Ask about security threats, vulnerabilities, or get incident response guidance..."
+                    : isListening
+                      ? "Listening... Speak your security question"
+                      : "Ask about security threats, vulnerabilities, or get incident response guidance..."
                 }
                 className="w-full bg-slate-800/50 border border-slate-600/30 focus:border-blue-500/50 text-slate-200 placeholder-slate-500 rounded-2xl px-4 py-3 pr-16 resize-none min-h-[48px] max-h-[200px]"
                 value={agentInput}
@@ -546,10 +659,16 @@ export default function SecBotInterface() {
                   handleAgentInputChange(e);
                   e.target.style.height = "auto";
                   e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-                  setTextareaHeight(`${Math.min(e.target.scrollHeight, 200)}px`);
+                  setTextareaHeight(
+                    `${Math.min(e.target.scrollHeight, 200)}px`
+                  );
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    !e.nativeEvent.isComposing
+                  ) {
                     e.preventDefault();
                     handleAgentSubmit(e as unknown as React.FormEvent);
                   }
@@ -557,7 +676,7 @@ export default function SecBotInterface() {
                 rows={1}
                 style={{ height: textareaHeight }}
               />
-              
+
               <div className="absolute bottom-2 right-2">
                 {status === "submitted" || status === "streaming" ? (
                   <button
@@ -579,18 +698,21 @@ export default function SecBotInterface() {
               </div>
             </div>
           </div>
-          
+
           {isListening && (
             <div className="flex items-center justify-center gap-2 mt-2 text-red-400">
               <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-              <span className="text-sm">Listening... Speak your security question</span>
+              <span className="text-sm">
+                Listening... Speak your security question
+              </span>
             </div>
           )}
         </form>
-        
+
         {/* Footer Disclaimer */}
         <div className="mt-4 text-center text-xs text-slate-500 border-t border-slate-700/30 pt-4">
-          SecBot provides educational cybersecurity guidance. For production systems, consult professional security services.
+          SecBot provides educational cybersecurity guidance. For production
+          systems, consult professional security services.
         </div>
       </div>
     </div>
@@ -644,10 +766,12 @@ function HasWorkersAI() {
                   Workers AI Not Available
                 </h3>
                 <p className="text-slate-300 mb-1">
-                  SecBot requires Cloudflare Workers AI to function. Please ensure your Worker has AI binding configured.
+                  SecBot requires Cloudflare Workers AI to function. Please
+                  ensure your Worker has AI binding configured.
                 </p>
                 <p className="text-slate-400 text-sm">
-                  Check your wrangler.jsonc configuration and ensure AI binding is properly set up.
+                  Check your wrangler.jsonc configuration and ensure AI binding
+                  is properly set up.
                 </p>
               </div>
             </div>

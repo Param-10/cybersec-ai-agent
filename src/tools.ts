@@ -18,12 +18,21 @@ const analyzeNetworkLogs = tool({
   description: "Analyze network logs for security threats and anomalies",
   inputSchema: z.object({
     logData: z.string().describe("Network log entries to analyze"),
-    analysisType: z.enum(["intrusion", "malware", "ddos", "reconnaissance", "general"]).describe("Type of security analysis to perform"),
-    timeRange: z.string().optional().describe("Time range for log analysis (e.g., '1h', '24h')")
+    analysisType: z
+      .enum(["intrusion", "malware", "ddos", "reconnaissance", "general"])
+      .describe("Type of security analysis to perform"),
+    timeRange: z
+      .string()
+      .optional()
+      .describe("Time range for log analysis (e.g., '1h', '24h')")
   }),
   execute: async ({ logData, analysisType, timeRange }) => {
     const securityTools = new SecurityAnalysisTools();
-    return await securityTools.analyzeNetworkLogs({ logData, analysisType, timeRange });
+    return await securityTools.analyzeNetworkLogs({
+      logData,
+      analysisType,
+      timeRange
+    });
   }
 });
 
@@ -32,15 +41,25 @@ const analyzeNetworkLogs = tool({
  * Assess software, systems, or configurations for security vulnerabilities
  */
 const vulnerabilityAssessment = tool({
-  description: "Assess software, systems, or configurations for security vulnerabilities",
+  description:
+    "Assess software, systems, or configurations for security vulnerabilities",
   inputSchema: z.object({
     target: z.string().describe("System, software, or configuration to assess"),
-    scanType: z.enum(["quick", "comprehensive", "compliance"]).describe("Type of vulnerability scan to perform"),
-    compliance: z.string().optional().describe("Compliance framework to check against (NIST, PCI-DSS, etc.)")
+    scanType: z
+      .enum(["quick", "comprehensive", "compliance"])
+      .describe("Type of vulnerability scan to perform"),
+    compliance: z
+      .string()
+      .optional()
+      .describe("Compliance framework to check against (NIST, PCI-DSS, etc.)")
   }),
   execute: async ({ target, scanType, compliance }) => {
     const securityTools = new SecurityAnalysisTools();
-    return await securityTools.performVulnerabilityAssessment({ target, scanType, compliance });
+    return await securityTools.performVulnerabilityAssessment({
+      target,
+      scanType,
+      compliance
+    });
   }
 });
 
@@ -49,15 +68,28 @@ const vulnerabilityAssessment = tool({
  * Provide detailed explanations of cybersecurity concepts, attacks, and defenses
  */
 const explainSecurityConcept = tool({
-  description: "Provide detailed explanations of cybersecurity concepts, attacks, and defenses",
+  description:
+    "Provide detailed explanations of cybersecurity concepts, attacks, and defenses",
   inputSchema: z.object({
     concept: z.string().describe("Security concept to explain"),
-    skillLevel: z.enum(["beginner", "intermediate", "advanced"]).optional().describe("User's technical skill level for appropriate explanation depth"),
-    includeExamples: z.boolean().optional().describe("Whether to include practical examples")
+    skillLevel: z
+      .enum(["beginner", "intermediate", "advanced"])
+      .optional()
+      .describe(
+        "User's technical skill level for appropriate explanation depth"
+      ),
+    includeExamples: z
+      .boolean()
+      .optional()
+      .describe("Whether to include practical examples")
   }),
   execute: async ({ concept, skillLevel, includeExamples }) => {
     const securityTools = new SecurityAnalysisTools();
-    return await securityTools.explainSecurityConcept({ concept, skillLevel, includeExamples });
+    return await securityTools.explainSecurityConcept({
+      concept,
+      skillLevel,
+      includeExamples
+    });
   }
 });
 
@@ -66,15 +98,34 @@ const explainSecurityConcept = tool({
  * Provide step-by-step incident response procedures and best practices
  */
 const incidentResponseGuidance = tool({
-  description: "Provide step-by-step incident response procedures and best practices",
+  description:
+    "Provide step-by-step incident response procedures and best practices",
   inputSchema: z.object({
-    incidentType: z.enum(["malware", "data-breach", "ddos", "insider-threat", "phishing", "ransomware"]).describe("Type of security incident"),
-    severity: z.enum(["low", "medium", "high", "critical"]).describe("Assessed severity of the incident"),
-    affectedSystems: z.string().optional().describe("Description of affected systems or data")
+    incidentType: z
+      .enum([
+        "malware",
+        "data-breach",
+        "ddos",
+        "insider-threat",
+        "phishing",
+        "ransomware"
+      ])
+      .describe("Type of security incident"),
+    severity: z
+      .enum(["low", "medium", "high", "critical"])
+      .describe("Assessed severity of the incident"),
+    affectedSystems: z
+      .string()
+      .optional()
+      .describe("Description of affected systems or data")
   }),
   execute: async ({ incidentType, severity, affectedSystems }) => {
     const securityTools = new SecurityAnalysisTools();
-    return await securityTools.provideIncidentResponseGuidance({ incidentType, severity, affectedSystems });
+    return await securityTools.provideIncidentResponseGuidance({
+      incidentType,
+      severity,
+      affectedSystems
+    });
   }
 });
 
