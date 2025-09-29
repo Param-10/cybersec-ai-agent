@@ -124,7 +124,7 @@ const incidentResponseGuidance = tool({
     return await securityTools.provideIncidentResponseGuidance({
       incidentType,
       severity,
-      affectedSystems
+      affectedSystems: affectedSystems ? [affectedSystems] : undefined
     });
   }
 });

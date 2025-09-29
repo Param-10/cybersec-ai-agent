@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import type React from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAgent } from "agents/react";
 import { isToolUIPart } from "ai";
 import { useAgentChat } from "agents/ai-react";
@@ -32,10 +33,33 @@ interface SecurityContext {
 const toolsRequiringConfirmation: (keyof typeof tools)[] = [];
 
 // Browser speech recognition types
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognition;
+}
+
+interface SpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+  start(): void;
+  stop(): void;
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
+    SpeechRecognition: SpeechRecognitionConstructor;
+    webkitSpeechRecognition: SpeechRecognitionConstructor;
   }
 }
 
@@ -47,7 +71,7 @@ export default function SecBotInterface() {
   const [analysisMode, setAnalysisMode] = useState<string>("general");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -97,12 +121,14 @@ export default function SecBotInterface() {
         recognitionRef.current.interimResults = false;
         recognitionRef.current.lang = "en-US";
 
-        recognitionRef.current.onresult = (event: any) => {
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
           const transcript = event.results[0][0].transcript;
           handleVoiceInput(transcript);
         };
 
-        recognitionRef.current.onerror = (event: any) => {
+        recognitionRef.current.onerror = (
+          event: SpeechRecognitionErrorEvent
+        ) => {
           console.error("Speech recognition error:", event.error);
           setIsListening(false);
         };
@@ -134,8 +160,27 @@ export default function SecBotInterface() {
 
     // Auto-submit voice input after a brief delay
     setTimeout(() => {
-      handleAgentSubmit(new Event("submit") as any);
+      handleVoiceSubmit();
     }, 100);
+  };
+
+  const handleVoiceSubmit = async () => {
+    if (!agentInput.trim()) return;
+
+    const message = agentInput;
+    setAgentInput("");
+    setTextareaHeight("auto");
+
+    // Send message to agent
+    await sendMessage(
+      {
+        role: "user",
+        parts: [{ type: "text", text: message }]
+      },
+      {
+        body: {}
+      }
+    );
   };
 
   const handleAgentInputChange = (

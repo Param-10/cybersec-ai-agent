@@ -75,10 +75,41 @@ export interface RemediationItem {
   resources: string[];
 }
 
-export class SecurityAnalysisTools {
-  private threatDatabase: Map<string, any> = new Map();
+interface ThreatData {
+  severity: SecurityThreat["severity"];
+  description: string;
+  indicators: string[];
+  mitigation: string;
+}
 
-  constructor(_env?: any) {
+interface NetworkLogParams {
+  logData: string;
+  analysisType?: string;
+  timeRange?: string;
+}
+
+interface VulnerabilityParams {
+  target: string;
+  scanType: string;
+  compliance?: string;
+}
+
+interface SecurityConceptParams {
+  concept: string;
+  skillLevel?: string;
+  includeExamples?: boolean;
+}
+
+interface IncidentResponseParams {
+  incidentType: string;
+  severity: string;
+  affectedSystems?: string[];
+}
+
+export class SecurityAnalysisTools {
+  private threatDatabase: Map<string, ThreatData> = new Map();
+
+  constructor(_env?: unknown) {
     this.initializeThreatDatabase();
   }
 
@@ -193,7 +224,9 @@ export class SecurityAnalysisTools {
     ]);
   }
 
-  async analyzeNetworkLogs(params: any): Promise<SecurityAnalysisResult> {
+  async analyzeNetworkLogs(
+    params: NetworkLogParams
+  ): Promise<SecurityAnalysisResult> {
     const { logData, analysisType, timeRange = "24h" } = params;
 
     // Parse log data
@@ -209,7 +242,7 @@ export class SecurityAnalysisTools {
     for (const line of logLines) {
       const detectedThreats = await this.detectThreatsInLogLine(
         line,
-        analysisType
+        analysisType || "general"
       );
       threats.push(...detectedThreats);
     }
@@ -223,7 +256,7 @@ export class SecurityAnalysisTools {
       threats: threats.slice(0, 10), // Top 10 threats
       recommendations: this.generateSecurityRecommendations(
         threats,
-        analysisType
+        analysisType || "general"
       ),
       nextSteps: this.getIncidentResponseSteps(statistics.riskLevel, threats),
       analysisTimestamp: new Date().toISOString()
@@ -233,7 +266,7 @@ export class SecurityAnalysisTools {
   }
 
   async performVulnerabilityAssessment(
-    params: any
+    params: VulnerabilityParams
   ): Promise<VulnerabilityAssessment> {
     const { target, scanType, compliance } = params;
 
@@ -275,7 +308,9 @@ export class SecurityAnalysisTools {
     };
   }
 
-  async explainSecurityConcept(params: any): Promise<any> {
+  async explainSecurityConcept(
+    params: SecurityConceptParams
+  ): Promise<unknown> {
     const {
       concept,
       skillLevel = "intermediate",
@@ -342,14 +377,19 @@ export class SecurityAnalysisTools {
     };
 
     if (includeExamples) {
-      (response as any).examples = explanation.examples;
-      (response as any).caseStudies = explanation.caseStudies;
+      return {
+        ...response,
+        examples: explanation.examples,
+        caseStudies: explanation.caseStudies
+      };
     }
 
     return response;
   }
 
-  async provideIncidentResponseGuidance(params: any): Promise<any> {
+  async provideIncidentResponseGuidance(
+    params: IncidentResponseParams
+  ): Promise<unknown> {
     const { incidentType, severity, affectedSystems } = params;
 
     const responseGuidance = {
@@ -361,7 +401,7 @@ export class SecurityAnalysisTools {
       eradicationPlan: this.getEradicationPlan(incidentType),
       recoveryProcedure: this.getRecoveryProcedure(
         incidentType,
-        affectedSystems
+        (affectedSystems || []).join(", ")
       ),
       lessonsLearned: this.getLessonsLearned(incidentType),
       complianceRequirements: this.getComplianceRequirements(

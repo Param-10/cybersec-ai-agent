@@ -3,6 +3,38 @@ import { routeAgentRequest, type Schedule } from "agents";
 import { getSchedulePrompt } from "agents/schedule";
 
 import { AIChatAgent } from "agents/ai-chat-agent";
+
+// Type definitions
+interface SecurityContext {
+  domain?: string;
+  urgency?: string;
+  analysisType?: string;
+  detectedThreat?: string;
+}
+
+interface MessagePart {
+  type: string;
+  text?: string;
+}
+
+interface Message {
+  parts: MessagePart[];
+}
+
+interface SecurityInteraction {
+  userQuery: string;
+  agentResponse: string;
+  securityContext: SecurityContext;
+  usage: unknown;
+  timestamp: string;
+}
+
+interface DurableObjectState {
+  storage: {
+    get(key: string): Promise<unknown>;
+    put(key: string, value: unknown): Promise<void>;
+  };
+}
 import {
   generateId,
   streamText,
@@ -73,7 +105,7 @@ export class Chat extends AIChatAgent<Env> {
         });
 
         const result = streamText({
-          model: workersAI(model as any),
+          model: workersAI(model as Parameters<typeof workersAI>[0]),
           system: this.generateSecuritySystemPrompt(securityContext),
           messages: convertToModelMessages(processedMessages),
           tools: allTools,
@@ -93,7 +125,7 @@ export class Chat extends AIChatAgent<Env> {
 
             // Call the original onFinish callback
             if (onFinish) {
-              onFinish(finishResult as any);
+              onFinish(finishResult as never);
             }
           },
           stopWhen: stepCountIs(10)
@@ -109,7 +141,7 @@ export class Chat extends AIChatAgent<Env> {
   /**
    * Generate cybersecurity-focused system prompt based on context
    */
-  private generateSecuritySystemPrompt(context: any): string {
+  private generateSecuritySystemPrompt(context: SecurityContext): string {
     return `You are SecBot, an expert cybersecurity AI assistant with the following capabilities:
 
 🛡️ CORE EXPERTISE:
@@ -151,10 +183,12 @@ If the user asks to schedule a security task, use the schedule tool to schedule 
   /**
    * Analyze user message for security context and urgency
    */
-  private async analyzeSecurityContext(message: any): Promise<any> {
+  private async analyzeSecurityContext(
+    message: Message
+  ): Promise<SecurityContext> {
     const content =
       typeof message.parts[0] === "object" && message.parts[0].type === "text"
-        ? message.parts[0].text
+        ? message.parts[0].text || ""
         : "";
 
     const securityKeywords = {
@@ -191,20 +225,21 @@ If the user asks to schedule a security task, use the schedule tool to schedule 
   /**
    * Log security interaction for analysis and improvement
    */
-  private async logSecurityInteraction(interaction: any): Promise<void> {
+  private async logSecurityInteraction(
+    interaction: SecurityInteraction
+  ): Promise<void> {
     try {
       // Check if Durable Object state is available (might not be in local dev)
-      if (!this.state || !(this.state as any)?.storage) {
+      if (!this.state || !(this.state as DurableObjectState)?.storage) {
         // Silently skip logging in local development
         return;
       }
 
-      // @ts-ignore - Durable Object storage returns unknown, but we handle it safely
-      const stored = await (this.state as any).storage.get(
+      const stored = await (this.state as DurableObjectState).storage.get(
         "security_interactions"
       );
-      const interactions: any[] = Array.isArray(stored)
-        ? (stored as any[])
+      const interactions: SecurityInteraction[] = Array.isArray(stored)
+        ? (stored as SecurityInteraction[])
         : [];
       interactions.push(interaction);
 
@@ -213,12 +248,11 @@ If the user asks to schedule a security task, use the schedule tool to schedule 
         interactions.splice(0, interactions.length - 100);
       }
 
-      // @ts-ignore - Durable Object storage put accepts any serializable value
-      await (this.state as any).storage.put(
+      await (this.state as DurableObjectState).storage.put(
         "security_interactions",
         interactions
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error logging security interaction:", error);
     }
   }
